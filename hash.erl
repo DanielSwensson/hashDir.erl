@@ -1,5 +1,5 @@
 -module(hash).
--compile(export_all).
+-export([run/1]).
 
 salt() -> "THIS IS THE SALT!".
 
