@@ -13,20 +13,21 @@ hash([Name | T],Dir) ->
 	case filelib:is_dir(Dir ++ Name) of
 		true ->
 			
-			PathName = Dir ++ salt_and_hash(Name),
-			file:rename(Dir ++ Name, PathName),
-			{ok,Filenames} = file:list_dir(PathName),
-			ok = hash(Filenames,PathName ++ "/"),
+			NewPathName = hash_and_rename(Dir,Name,""),
+			{ok,Filenames} = file:list_dir(NewPathName),
+			ok = hash(Filenames,NewPathName ++ "/"),
 			hash(T,Dir);
 		_Else ->
-			PathName = Dir ++ salt_and_hash(Name),
-			file:rename(Dir ++ Name, PathName ++ ".java"),
+			Extension = filename:extension(Name),
+			hash_and_rename(Dir,Name,Extension),
 			hash(T,Dir)
 	end.
 
-salt_and_hash(Name) ->
+hash_and_rename(Dir,Name,Extension) ->
 	RandomSalt = binary_to_list(crypto:rand_bytes(100)),
 	<<HashName:128>> = crypto:hash(md5,RandomSalt ++ salt() ++ Name),
-	integer_to_list(HashName). 
+	NewPathName = Dir ++ integer_to_list(HashName),
+	file:rename(Dir ++ Name, NewPathName ++ Extension),
+	NewPathName.
 
 	
